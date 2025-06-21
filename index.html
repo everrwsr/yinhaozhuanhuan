@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>精确中文标点转换工具</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- 标题区域 -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-quote-left text-blue-500 mr-2"></i>
+                精确中文标点转换工具
+            </h1>
+            <p class="text-gray-600 text-lg">基于原始punctuationToChinese函数的精确实现</p>
+        </div>
+
+        <!-- 转换规则说明 -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                转换规则说明
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-2">
+                    <h3 class="font-semibold text-gray-700">基本标点转换：</h3>
+                    <div class="text-sm space-y-1">
+                        <div><span class="bg-red-100 px-2 py-1 rounded">,</span> → <span
+                                class="bg-green-100 px-2 py-1 rounded">，</span> (逗号)</div>
+                        <div><span class="bg-red-100 px-2 py-1 rounded">;</span> → <span
+                                class="bg-green-100 px-2 py-1 rounded">；</span> (分号)</div>
+                        <div><span class="bg-red-100 px-2 py-1 rounded">:</span> → <span
+                                class="bg-green-100 px-2 py-1 rounded">：</span> (冒号)</div>
+                        <div><span class="bg-red-100 px-2 py-1 rounded">?</span> → <span
+                                class="bg-green-100 px-2 py-1 rounded">？</span> (问号)</div>
+                        <div><span class="bg-red-100 px-2 py-1 rounded">!</span> → <span
+                                class="bg-green-100 px-2 py-1 rounded">！</span> (感叹号)</div>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="font-semibold text-gray-700">智能转换：</h3>
+                    <div class="text-sm space-y-1">
+                        <div><span class="bg-red-100 px-2 py-1 rounded">"</span> → <span
+                                class="bg-green-100 px-2 py-1 rounded">”</span> (第1,3,5...个引号)</div>
+                        <div><span class="bg-red-100 px-2 py-1 rounded">"</span> → <span
+                                class="bg-green-100 px-2 py-1 rounded">”</span> (第2,4,6...个引号)</div>
+                        <div><span class="bg-red-100 px-2 py-1 rounded">'</span> → <span
+                                class="bg-green-100 px-2 py-1 rounded">’</span> (第1,3,5...个单引号)</div>
+                        <div><span class="bg-red-100 px-2 py-1 rounded">'</span> → <span
+                                class="bg-green-100 px-2 py-1 rounded">’</span> (第2,4,6...个单引号)</div>
+                        <div><span class="bg-red-100 px-2 py-1 rounded">.</span> → <span
+                                class="bg-green-100 px-2 py-1 rounded">。</span> (句末或中文前)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主要转换区域 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- 输入区域 -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">
+                        <i class="fas fa-edit text-blue-500 mr-2"></i>
+                        输入文本
+                    </h3>
+                    <span id="inputCount" class="text-sm text-gray-500">0 字符</span>
+                </div>
+                <textarea id="inputText"
+                    class="w-full h-64 p-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors resize-none font-mono"
+                    placeholder="请输入需要转换的文本"></textarea>
+                <div class="flex gap-2 mt-4">
+                    <button onclick="clearInput()"
+                        class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                        <i class="fas fa-trash mr-2"></i>清空
+                    </button>
+                    <button onclick="loadExample()"
+                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                        <i class="fas fa-file-text mr-2"></i>示例文本
+                    </button>
+                </div>
+            </div>
+
+            <!-- 输出区域 -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        转换结果
+                    </h3>
+                    <span id="outputCount" class="text-sm text-gray-500">0 字符</span>
+                </div>
+                <textarea id="outputText"
+                    class="w-full h-64 p-4 border-2 border-gray-200 rounded-lg bg-gray-50 font-mono" readonly
+                    placeholder="转换结果将显示在这里..."></textarea>
+                <div class="flex gap-2 mt-4">
+                    <button onclick="copyResult()"
+                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                        <i class="fas fa-copy mr-2"></i>复制结果
+                    </button>
+                    <button onclick="clearOutput()"
+                        class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                        <i class="fas fa-eraser mr-2"></i>清空结果
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 转换按钮 -->
+        <div class="text-center mb-8">
+            <button onclick="convertText()"
+                class="px-8 py-4 bg-blue-600 text-white text-xl font-semibold rounded-lg hover:bg-blue-700 transform hover:scale-105 transition-all shadow-lg">
+                <i class="fas fa-magic mr-3"></i>
+                开始转换
+                </i>
+            </button>
+        </div>
+
+        <!-- 统计信息 -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-chart-bar text-purple-500 mr-2"></i>
+                转换统计
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-blue-600" id="totalChars">0</div>
+                    <div class="text-sm text-gray-600">总字符数</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-green-600" id="convertedChars">0</div>
+                    <div class="text-sm text-gray-600">已转换字符</div>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-yellow-600" id="quoteCount">0</div>
+                    <div class="text-sm text-gray-600">引号数量</div>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-purple-600" id="punctuationCount">0</div>
+                    <div class="text-sm text-gray-600">标点数量</div>
+                </div>
+            </div>
+        </div>
+
+     
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 原始punctuationToChinese函数的精确实现
+
+        function punctuationToChinese(n) {
+            var r, u, t, i;
+            for (n = n.replace(/,/ig, "，"),
+                n = n.replace(/;/ig, "；"),
+                n = n.replace(/:/ig, "："),
+                n = n.replace(/\?/ig, "？"),
+                n = n.replace(/!/ig, "！"),
+                t = n.split(""),
+                i = 0; i < t.length; i++)
+                t[i] == "'" || t[i] == "‘" || t[i] == "’" ? u ? (t[i] = "’",
+                    u = !1) : (t[i] = "‘",
+                        u = !0) : (t[i] == '"' || t[i] == "“" || t[i] == "”") && (r ? (t[i] = "”",
+                            r = !1) : (t[i] = "“",
+                                r = !0)),
+                    t[i] == "." && i >= 1 && (i >= t.length - 1 ? t[i] = "。" : t[i + 1].match(/[\u4e00-\u9fa5]/g) && (t[i] = "。"));
+            return t.join("", t)
+        }
+
+        // 转换文本
+        function convertText() {
+            const input = document.getElementById('inputText').value;
+            if (!input.trim()) {
+                alert('请输入要转换的文本！');
+                return;
+            }
+
+            const result = punctuationToChinese(input);
+            document.getElementById('outputText').value = result;
+
+            updateStatistics(input, result);
+            updateCharCounts();
+        }
+
+        // 更新统计信息
+        function updateStatistics(original, converted) {
+            const totalChars = original.length;
+            let convertedChars = 0;
+            let quoteCount = 0;
+            let punctuationCount = 0;
+
+            // 计算转换的字符数
+            for (let i = 0; i < Math.min(original.length, converted.length); i++) {
+                if (original[i] !== converted[i]) {
+                    convertedChars++;
+                }
+            }
+
+            // 计算引号数量
+            quoteCount = (converted.match(/[""'']/g) || []).length;
+
+            // 计算标点符号数量
+            punctuationCount = (converted.match(/[，；：？！。""'']/g) || []).length;
+
+            document.getElementById('totalChars').textContent = totalChars;
+            document.getElementById('convertedChars').textContent = convertedChars;
+            document.getElementById('quoteCount').textContent = quoteCount;
+            document.getElementById('punctuationCount').textContent = punctuationCount;
+        }
+
+        // 更新字符计数
+        function updateCharCounts() {
+            const input = document.getElementById('inputText').value;
+            const output = document.getElementById('outputText').value;
+            document.getElementById('inputCount').textContent = input.length + ' 字符';
+            document.getElementById('outputCount').textContent = output.length + ' 字符';
+        }
+
+        // 清空输入
+        function clearInput() {
+            document.getElementById('inputText').value = '';
+            updateCharCounts();
+        }
+
+        // 清空输出
+        function clearOutput() {
+            document.getElementById('outputText').value = '';
+            updateCharCounts();
+            document.getElementById('totalChars').textContent = '0';
+            document.getElementById('convertedChars').textContent = '0';
+            document.getElementById('quoteCount').textContent = '0';
+            document.getElementById('punctuationCount').textContent = '0';
+        }
+
+        // 复制结果
+        function copyResult() {
+            const output = document.getElementById('outputText');
+            output.select();
+            document.execCommand('copy');
+
+            // 显示复制成功提示
+            const button = event.target.closest('button');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check mr-2"></i>已复制';
+            button.classList.remove('bg-green-500', 'hover:bg-green-600');
+            button.classList.add('bg-green-600');
+
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.classList.remove('bg-green-600');
+                button.classList.add('bg-green-500', 'hover:bg-green-600');
+            }, 2000);
+        }
+
+        // 加载示例文本
+        function loadExample() {
+            const example = `刘嘉欣说"你好，今天天气真不错！"然后她又补充道"我们一起去公园散步吧。"`;
+
+            document.getElementById('inputText').value = example;
+            updateCharCounts();
+        }
+
+        // 实时更新字符计数
+        document.getElementById('inputText').addEventListener('input', updateCharCounts);
+        document.getElementById('outputText').addEventListener('input', updateCharCounts);
+
+        // 支持Enter键转换
+        document.getElementById('inputText').addEventListener('keydown', function (e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                convertText();
+            }
+        });
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function () {
+            updateCharCounts();
+        });
+    </script>
+</body>
+
+</html>
