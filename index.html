@@ -169,7 +169,8 @@
                         u = !0) : (t[i] == '"' || t[i] == "“" || t[i] == "”") && (r ? (t[i] = "”",
                             r = !1) : (t[i] = "“",
                                 r = !0)),
-                    t[i] == "." && i >= 1 && (i >= t.length - 1 ? t[i] = "。" : t[i + 1].match(/[\u4e00-\u9fa5]/g) && (t[i] = "。"));
+                    t[i] == "." && (t[i] = "。");  // 无条件转换所有英文句号为中文句号
+                    
             return t.join("", t)
         }
 
@@ -260,7 +261,8 @@
 
         // 加载示例文本
         function loadExample() {
-            const example = `刘嘉欣说"你好，今天天气真不错！"然后她又补充道"我们一起去公园散步吧。"`;
+
+            const example = `刘嘉欣说"你好，今天天气真不错！"然后他又补充道"我们一起去公园散步吧。"`;
 
             document.getElementById('inputText').value = example;
             updateCharCounts();
